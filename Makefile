@@ -9,3 +9,6 @@ all: proclst
 
 proclst: proclst.o
 	$(CC) -o proclst proclst.o
+
+clean:
+	rm proclst proclst.o

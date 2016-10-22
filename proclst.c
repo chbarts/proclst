@@ -8,13 +8,10 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define MAX 256
-
 int main(void)
 {
     DIR *cur, *proc;
     struct dirent *cure, *proce;
-    char fname[MAX];
     FILE *inf;
     int c;
 
@@ -40,11 +37,17 @@ int main(void)
 
             while ((cure = readdir(cur)) != NULL) {
                 if (!strcmp(cure->d_name, "cmdline")) {
-                    snprintf(fname, MAX, "%s/cmdline", proce->d_name);
-                    if ((inf = fopen(fname, "rb")) == NULL) {
+                    if (chdir(proce->d_name) == -1) {
                         fprintf(stderr,
-                                "proclst: failed to open /proc/%s: %s\n",
-                                fname, strerror(errno));
+                                "proclst: failed to chdir into /proc/%s: %s\n",
+                                proce->d_name, strerror(errno));
+                        goto abend;
+                    }
+
+                    if ((inf = fopen("cmdline", "rb")) == NULL) {
+                        fprintf(stderr,
+                                "proclst: failed to open /proc/%s/cmdline: %s\n",
+                                proce->d_name, strerror(errno));
                         continue;
                     }
 
@@ -62,9 +65,18 @@ int main(void)
 
                     if (fclose(inf) == EOF) {
                         fprintf(stderr,
-                                "proclst: failed to close /proc/%s: %s\n",
-                                fname, strerror(errno));
+                                "proclst: failed to close /proc/%s/cmdline: %s\n",
+                                proce->d_name, strerror(errno));
                     }
+
+                    if (chdir("..") == -1) {
+                        fprintf(stderr,
+                                "proclst: failed to chdir out of /proc/%s: %s\n",
+                                proce->d_name, strerror(errno));
+                        exit(EXIT_FAILURE);
+                    }
+
+                    break;
                 }
             }
 
@@ -73,6 +85,7 @@ int main(void)
                         proce->d_name, strerror(errno));
             }
 
+          abend:
             if (closedir(cur) == -1) {
                 fprintf(stderr, "proclst: failed to close /proc/%s: %s\n",
                         proce->d_name, strerror(errno));

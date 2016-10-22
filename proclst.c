@@ -8,12 +8,28 @@
 #include <dirent.h>
 #include <errno.h>
 
-int main(void)
+int main(int argc, char *argv[])
 {
     DIR *cur, *proc;
     struct dirent *cure, *proce;
+    char *sep = " ";
     FILE *inf;
     int c;
+
+    if (2 == argc) {
+        if (!strcmp("-h", argv[1]) || !strcmp("--help", argv[1])) {
+            printf("usage: %s [-h|--help] [separator]\n", argv[0]);
+            puts("");
+            puts("Print processes with full command lines, with separator between command line elements.");
+            puts("If not specified, separator defaults to space.");
+            exit(EXIT_SUCCESS);
+        } else if (!strcmp("-v", argv[1]) || !strcmp("--version", argv[1])) {
+            puts("proclst version 0.01");
+            exit(EXIT_SUCCESS);
+        } else {
+            sep = argv[1];
+        }
+    }
 
     if (chdir("/proc") == -1) {
         fprintf(stderr, "proclst: failed to chdir to /proc: %s\n",
@@ -55,7 +71,7 @@ int main(void)
 
                     while ((c = getc(inf)) != EOF) {
                         if ('\0' == c) {
-                            putchar(' ');
+                            printf("%s", sep);
                         } else {
                             putchar(c);
                         }

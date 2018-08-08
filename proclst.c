@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
             if ((cur = opendir(proce->d_name)) == NULL) {
                 fprintf(stderr, "proclst: failed to open /proc/%s: %s\n",
                         proce->d_name, strerror(errno));
+                errno = 0;
                 continue;
             }
 
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
                         fprintf(stderr,
                                 "proclst: failed to open /proc/%s/cmdline: %s\n",
                                 proce->d_name, strerror(errno));
+                        errno = 0;
                         continue;
                     }
 
@@ -99,6 +101,7 @@ int main(int argc, char *argv[])
             if (errno != 0) {
                 fprintf(stderr, "proclst: failed to read /proc/%s: %s\n",
                         proce->d_name, strerror(errno));
+                errno = 0;
             }
 
           abend:
